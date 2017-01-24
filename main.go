@@ -19,18 +19,20 @@ func main() {
 
 	if err != nil {
 		log.Fatal("Error: The data source arguments are not valid")
+		os.Exit(1)
 	}
 
 	err = db.Ping()
+
 	if err != nil {
 		log.Fatal("Error: Could not establish a connection with the database")
+		os.Exit(1)
 	}
 
-	// dump1090
+	// connect to mutability-dump1090
 	conn, err := net.Dial("tcp", "127.0.0.1:30003") // todo env variables
 
 	if err != nil {
-		// handle error
 		fmt.Printf("connection error: %s\n", err)
 		os.Exit(1)
 	}
