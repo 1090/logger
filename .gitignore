@@ -1,3 +1,4 @@
 .idea
 *.iml
 /logger
+deploy.sh
