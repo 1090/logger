@@ -54,12 +54,12 @@ func main() {
 
 			hex := values[4]
 			timestamp := parseTimestamp(values[6], values[7])
-			flight := values[10] // flight "name"
-			altitude := parseInt(values[11]) // feet
-			speed := parseInt(values[12]) // mph
-			heading := parseInt(values[13]) // degrees
-			lat := parseDouble(values[14])
-			lon := parseDouble(values[15])
+			flight := sqlString(values[10]) // flight "name"
+			altitude := sqlInt(values[11]) // feet
+			speed := sqlInt(values[12]) // mph
+			heading := sqlInt(values[13]) // degrees
+			lat := sqlDouble(values[14])
+			lon := sqlDouble(values[15])
 			src := strings.TrimSpace(output)
 
 			addBeacon(db, hex, timestamp, flight, altitude, speed, heading, lat, lon, src);
@@ -79,27 +79,27 @@ func parseTimestamp(date_part string, time_part string) int64 {
 	return timestamp.Unix()
 }
 
-func addBeacon(db *sql.DB, hex string, timestamp int64, flight string, altitude sql.NullInt64, speed sql.NullInt64, heading sql.NullInt64, lat sql.NullFloat64, lon sql.NullFloat64, src string) {
+func addBeacon(db *sql.DB, hex string, timestamp int64, flight sql.NullString, altitude sql.NullInt64, speed sql.NullInt64, heading sql.NullInt64, lat sql.NullFloat64, lon sql.NullFloat64, src string) {
 	_, err := db.Exec("INSERT INTO beacons (hex, timestamp, flight, altitude, speed, heading, lat, lon, src) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)", hex, timestamp, flight, altitude, speed, heading, lat, lon, src)
 
 	checkErr(err)
 }
 
-func parseInt(value string) sql.NullInt64 {
+func sqlInt(value string) sql.NullInt64 {
 	if len(value) == 0 {
-		return sql.NullInt64{Int64: 0, Valid: false}
+		return sql.NullInt64{}
 	}
 
 	s, err := strconv.ParseInt(value, 10, 64)
 
 	checkErr(err)
 
-	return sql.NullInt64{Int64: s, Valid: false}
+	return sql.NullInt64{Int64: s, Valid: true}
 }
 
-func parseDouble(value string) sql.NullFloat64 {
+func sqlDouble(value string) sql.NullFloat64 {
 	if len(value) == 0 {
-		return sql.NullFloat64{Float64: 0, Valid: false}
+		return sql.NullFloat64{}
 	}
 
 	s, err := strconv.ParseFloat(value, 64)
@@ -107,6 +107,17 @@ func parseDouble(value string) sql.NullFloat64 {
 	checkErr(err)
 
 	return sql.NullFloat64{Float64: s, Valid: true}
+}
+
+func sqlString(s string) sql.NullString {
+	if len(s) == 0 {
+		return sql.NullString{}
+	}
+
+	return sql.NullString{
+		String: s,
+		Valid: true,
+	}
 }
 
 func checkErr(err error) {
